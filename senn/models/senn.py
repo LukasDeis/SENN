@@ -1,7 +1,6 @@
 from scipy import stats
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 
