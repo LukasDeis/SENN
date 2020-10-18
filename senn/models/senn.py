@@ -236,7 +236,7 @@ class DiSENN(nn.Module):
         prototypes = self.vae_conceptizer.decoder(concepts_traversals)
         prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
 
-        # nrow is number of images in a row which must be the number of prototypes
+        # nrow is number of original images in a row which must be the number of prototypes
         prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).cpu().detach().numpy()
 
         # prepare to plot

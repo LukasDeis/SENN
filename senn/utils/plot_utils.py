@@ -23,7 +23,7 @@ def get_comparison_plot(images, model):
     Parameters
     ----------
     images: torch.Tensor
-       An array with the images to be compared
+       An array with the original images to be compared
     model: models.senn
        A senn model to be used for the visualizations
 

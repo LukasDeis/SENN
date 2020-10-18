@@ -11,7 +11,7 @@ This repository contains the code for reproducing the paper ``Towards Robust Int
   6. [References](#references)
 
 ## Project Structure
-<img src="images/UML-SENN.png" alt="Project Structure" width="720">
+<img src="original images/UML-SENN.png" alt="Project Structure" width="720">
 
 ## How to run?
 
@@ -23,7 +23,7 @@ This repository contains the code for reproducing the paper ``Towards Robust Int
  conda activate senn
 ```
 
-2. To reproduce our results using trained models, run the [Report Notebook](report.ipynb).  
+2. To reproduce our results using trained models, run the [Report Notebook](original  report.ipynb).  
 
 3. To train a model using one of our experiment parameters:
 ```
@@ -73,11 +73,11 @@ Note: It is also possible to specify the architectures of the parameterizer and 
 
 
 ## Results
-The [Report Notebook](report.ipynb) reproduces all the results of our experiments. Here we present the major results:
+The [Report Notebook](original  report.ipynb) reproduces all the results of our experiments. Here we present the major results:
 1. Reproduced MNIST Test Accuracy: 98.9%
 2. Reproduced COMPAS Test Accuracy: 80.9%
-3. SENN Explanations: ![](images/senn_concept_activations.png)
-4. SENN Prototypes: ![](images/senn_concept_prototypes.png)
+3. SENN Explanations: ![](original images/senn_concept_activations.png)
+4. SENN Prototypes: ![](original images/senn_concept_prototypes.png)
 
 ## Documentation
 The documentation of our SENN package is available on https://senn.readthedocs.io/en/latest/

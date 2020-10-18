@@ -266,7 +266,7 @@ class ConvConceptizer(Conceptizer):
         concept_dim : int
             the dimension of each concept to be learned
         image_channels : int
-            the number of channels of the input images
+            the number of channels of the input original images
         encoder_channels : tuple[int]
             a list with the number of channels for the hidden convolutional layers
         decoder_channels : tuple[int]
