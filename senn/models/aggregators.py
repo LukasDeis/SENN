@@ -1,9 +1,7 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import tensorflow as tf
 
 
-class SumAggregator(nn.Module):
+class SumAggregator:
     def __init__(self, num_classes, **kwargs):
         """Basic Sum Aggregator that joins the concepts and relevances by summing their products.
         """
@@ -28,5 +26,8 @@ class SumAggregator(nn.Module):
             Predictions for each class. Shape - (BATCH, NUM_CLASSES)
             
         """
-        aggregated = torch.bmm(relevances.permute(0, 2, 1), concepts).squeeze(-1)
-        return F.log_softmax(aggregated, dim=1)
+        permuted = tf.transpose(relevances, perm=[0, 2, 1])  # so that the number of concepts is at the end
+        batch_matrix_matrix_product = tf.matmul(permuted, concepts)  # multiply all relevance scores
+        #       with their corresponding concepts activation
+        aggregated = tf.squeeze(batch_matrix_matrix_product)  # squeeze(-1)  # remove the number of concepts
+        return tf.nn.log_softmax(aggregated, dim=1)
