@@ -5,11 +5,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import torch
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader, random_split
-from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision import datasets
 
 
 def get_dataloader(config):
@@ -34,7 +29,7 @@ def get_dataloader(config):
 
 #  --------------- Compas Dataset  ---------------
 
-class CompasDataset(Dataset):
+class CompasDataset(Dataset): #replace Dataset
     def __init__(self, data_path, verbose=True):
         """ProPublica Compas dataset.
 
@@ -49,10 +44,12 @@ class CompasDataset(Dataset):
         data_path : str
             Location of Compas data.
         """
-        df = pd.read_csv(data_path)
+        df = pd.read_csv(data_path)  # gonna be = pd.read_spss(data_path) for UMC data
 
         # don't know why square root
-        df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)
+        # maybe because it weights it a bit 10 are way worse than 0,
+        # but the difference between 10 and 15 is not that important
+        df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)  # normalizes first
         # get target
         compas_rating = df.score_factor.values  # This is the target?? (-_-)
         df = df.drop('score_factor', axis=1)
@@ -67,7 +64,7 @@ class CompasDataset(Dataset):
     def __len__(self):
         return len(self.X)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):  # probably to be removed
         # Convert idx from tensor to list due to pandas bug (that arises when using pytorch's random_split)
         if isinstance(idx, torch.Tensor):
             idx = idx.tolist()
@@ -103,7 +100,7 @@ def load_compas(data_path='senn/datasets/data/compas/compas.csv', train_percent=
     test_loader
         Dataloader for testing set.
     """
-    if not os.path.isfile(data_path):
+    if not os.path.isfile(data_path): #remove for UMC data
         Path(data_path).parent.mkdir(parents=True, exist_ok=True)
         compas_url = 'https://github.com/adebayoj/fairml/raw/master/doc/example_notebooks/propublica_data_for_fairml.csv'
         download_file(data_path, compas_url)
@@ -112,18 +109,18 @@ def load_compas(data_path='senn/datasets/data/compas/compas.csv', train_percent=
     # Split into training and test
     train_size = int(train_percent * len(dataset))
     test_size = len(dataset) - train_size
-    train_set, test_set = random_split(dataset, [train_size, test_size])
+    train_set, test_set = random_split(dataset, [train_size, test_size]) #replace with tf equivalent
 
     indices = list(range(train_size))
     validation_split = int(valid_size * train_size)
-    train_sampler = SubsetRandomSampler(indices[validation_split:])
-    valid_sampler = SubsetRandomSampler(indices[:validation_split])
+    train_sampler = SubsetRandomSampler(indices[validation_split:]) #replace with tf equivalent
+    valid_sampler = SubsetRandomSampler(indices[:validation_split]) #replace with tf equivalent
 
     # Dataloaders
     dataloader_args = dict(batch_size=batch_size, num_workers=num_workers, drop_last=True)
-    train_loader = DataLoader(train_set, sampler=train_sampler, **dataloader_args)
-    valid_loader = DataLoader(train_set, sampler=valid_sampler, **dataloader_args)
-    test_loader = DataLoader(test_set, shuffle=False, **dataloader_args)
+    train_loader = DataLoader(train_set, sampler=train_sampler, **dataloader_args) #replace
+    valid_loader = DataLoader(train_set, sampler=valid_sampler, **dataloader_args) #replace
+    test_loader = DataLoader(test_set, shuffle=False, **dataloader_args) #replace
 
     return train_loader, valid_loader, test_loader
 
