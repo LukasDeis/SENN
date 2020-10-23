@@ -49,7 +49,7 @@ class CompasDataset(Dataset): #replace Dataset
         # don't know why square root
         # maybe because it weights it a bit 10 are way worse than 0,
         # but the difference between 10 and 15 is not that important
-        df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)  # normalizes first
+        df['Number_of_Priors'] = (df['Number_of_Priors'] / df['Number_of_Priors'].max()) ** (1 / 2)  # to normalize
         # get target
         compas_rating = df.score_factor.values  # This is the target?? (-_-)
         df = df.drop('score_factor', axis=1)
