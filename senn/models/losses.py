@@ -118,21 +118,3 @@ def kl_div(mean, logvar):
     batch_loss = 0.5 * (mean.pow(2) + logvar.exp() - logvar - 1).mean(dim=0)
     loss = batch_loss.sum()
     return loss
-
-
-def zero_loss(*args, **kwargs):
-    """Dummy loss that always returns zero.
-
-        Parameters
-        ----------
-        args : list
-            Can take any number of positional arguments (without using them).
-        kwargs : dict
-            Can take any number of keyword arguments (without using them).
-
-        Returns
-        -------
-        loss : torch.tensor
-            torch.tensor(0)
-        """
-    return torch.tensor(0)
