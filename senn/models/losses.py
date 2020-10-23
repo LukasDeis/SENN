@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 
 
 def compas_robustness_loss(x, aggregates, concepts, relevances):
@@ -72,7 +71,7 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
         a constrained variational framework." (2016).
     """
     # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean")
-    recon_loss = F.mse_loss(x_hat, x.detach(), reduction="mean")
+    recon_loss = F.mse_loss(x_hat, x.detach(), reduction="mean")  # replace reference to torch functional
     kl_loss = kl_div(z_mean, z_logvar)
     return recon_loss, kl_loss
 
@@ -95,7 +94,7 @@ def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     loss : torch.tensor
         Concept loss
     """
-    return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()
+    return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()  # replace reference to torch functional
 
 
 def kl_div(mean, logvar):
