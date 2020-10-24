@@ -1,5 +1,5 @@
-import torch
-import tf.keras.losses.mean_squared_error as mean_squared_error
+import tensorflow as tf
+
 
 def compas_robustness_loss(x, aggregates, concepts, relevances):
     """Computes Robustness Loss for the Compas data
@@ -11,13 +11,13 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
 
     Parameters
     ----------
-    x            : torch.tensor
+    x            : torch.tensor #actual, in this case: =input
                  Input as (batch_size x num_features)
-    aggregates   : torch.tensor
+    aggregates   : torch.tensor #predicted
                  Aggregates from SENN as (batch_size x num_classes x concept_dim)
-    concepts     : torch.tensor
+    concepts     : torch.tensor #the basis for all predictions (combined by an aggregator)
                  Concepts from Conceptizer as (batch_size x num_concepts x concept_dim)
-    relevances   : torch.tensor
+    relevances   : torch.tensor #the weights when aggregating concepts
                  Relevances from Parameterizer as (batch_size x num_concepts x num_classes)
    
     Returns
@@ -28,16 +28,18 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     batch_size = x.size(0)
     num_classes = aggregates.size(1)
 
-    grad_tensor = torch.ones(batch_size, num_classes).to(x.device)
+    grad_tensor = tf.ones([batch_size, num_classes])  # in torch explicitly converted: .to(x.device)
     J_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
                                grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
+    #  as 'only_inputs' is True, the function will only return a list of gradients w.r.t the specified inputs.
+    J_yx =
     # bs x num_features -> bs x num_features x num_classes
     J_yx = J_yx.unsqueeze(-1)
 
     # J_hx = Identity Matrix; h(x) is identity function
     robustness_loss = J_yx - relevances
 
-    return robustness_loss.norm(p='fro')
+    return robustness_loss.norm(p='fro') #replace as this might not work with tf tensor
 
 
 def BVAE_loss(x, x_hat, z_mean, z_logvar):
@@ -71,7 +73,7 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
         a constrained variational framework." (2016).
     """
     # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean") #old code
-    recon_loss = mean_squared_error(x_hat, x.detach())
+    recon_loss = tf.keras.losses.mean_squared_error(x_hat, x.detach())
     kl_loss = kl_div(z_mean, z_logvar)
     return recon_loss, kl_loss
 
@@ -95,8 +97,8 @@ def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     loss : torch.tensor
         Concept loss
     """
-    mse_loss = mean_squared_error(x_hat, x.detach())
-    abs_concepts = torch.abs(concepts).sum()
+    mse_loss = tf.keras.losses.mean_squared_error(x_hat, x.detach())
+    abs_concepts = tf.abs(concepts).sum()  # does .sum() work properly?
     return mse_loss + sparsity_reg * abs_concepts
 
 
