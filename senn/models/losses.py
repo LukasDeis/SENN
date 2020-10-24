@@ -1,5 +1,5 @@
 import torch
-
+import tf.keras.losses.mean_squared_error as mean_squared_error
 
 def compas_robustness_loss(x, aggregates, concepts, relevances):
     """Computes Robustness Loss for the Compas data
@@ -70,10 +70,11 @@ def BVAE_loss(x, x_hat, z_mean, z_logvar):
         [1] Higgins, Irina, et al. "beta-vae: Learning basic visual concepts with
         a constrained variational framework." (2016).
     """
-    # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean")
-    recon_loss = F.mse_loss(x_hat, x.detach(), reduction="mean")  # replace reference to torch functional
+    # recon_loss = F.binary_cross_entropy(x_hat, x.detach(), reduction="mean") #old code
+    recon_loss = mean_squared_error(x_hat, x.detach())
     kl_loss = kl_div(z_mean, z_logvar)
     return recon_loss, kl_loss
+
 
 def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     """Sum of Mean Squared Error and L1 norm weighted by sparsity regularization parameter
@@ -94,7 +95,9 @@ def mse_l1_sparsity(x, x_hat, concepts, sparsity_reg):
     loss : torch.tensor
         Concept loss
     """
-    return F.mse_loss(x_hat, x.detach()) + sparsity_reg * torch.abs(concepts).sum()  # replace reference to torch functional
+    mse_loss = mean_squared_error(x_hat, x.detach())
+    abs_concepts = torch.abs(concepts).sum()
+    return mse_loss + sparsity_reg * abs_concepts
 
 
 def kl_div(mean, logvar):
