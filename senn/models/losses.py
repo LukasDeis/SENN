@@ -1,4 +1,7 @@
 import tensorflow as tf
+import autograd.numpy as np
+from autograd import grad
+
 
 
 def compas_robustness_loss(x, aggregates, concepts, relevances):
@@ -29,10 +32,10 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     num_classes = aggregates.size(1)
 
     grad_tensor = tf.ones([batch_size, num_classes])  # in torch explicitly converted: .to(x.device)
-    J_yx = torch.autograd.grad(outputs=aggregates, inputs=x, \
+    J_yx = grad(outputs=aggregates, inputs=x, \
                                grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
     #  as 'only_inputs' is True, the function will only return a list of gradients w.r.t the specified inputs.
-    J_yx =
+
     # bs x num_features -> bs x num_features x num_classes
     J_yx = J_yx.unsqueeze(-1)
 
