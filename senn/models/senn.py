@@ -1,11 +1,9 @@
+import tensorflow as tf
 from scipy import stats
-import torch
-import torch.nn as nn
-from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
 
 
-class SENN(nn.Module):
+class SENN(tf.Module):
     def __init__(self, conceptizer, parameterizer, aggregator):
         """Represents a Self Explaining Neural Network (SENN).
         (https://papers.nips.cc/paper/8003-towards-robust-interpretability-with-self-explaining-neural-networks)
@@ -75,7 +73,7 @@ class SENN(nn.Module):
         return predictions, explanations, recon_x
 
 
-class DiSENN(nn.Module):
+class DiSENN(tf.Module):
     """Self-Explaining Neural Network with Disentanglement 
 
     DiSENN is an extension of the Self-Explaining Neural Network proposed by [1]
@@ -227,7 +225,7 @@ class DiSENN(nn.Module):
         # by traversing independently in each dimension
         concepts_sample = concepts_sample.repeat(num_prototypes, 1)
         mean = x_posterior_mean.cpu().detach().numpy()
-        std = torch.exp(x_posterior_logvar.detach() / 2).cpu().numpy()
+        std = tf.math.exp(x_posterior_logvar.detach() / 2)  # TODO how to convert this?: .cpu().numpy()
         concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range,
                                              num_prototypes, mean[:, dim], std[:, dim], use_cdf)
                                for dim in range(num_concepts)]
@@ -236,7 +234,8 @@ class DiSENN(nn.Module):
         prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
 
         # nrow is number of original images in a row which must be the number of prototypes
-        prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).cpu().detach().numpy()
+        # prototype_grid_img = make_grid(prototype_imgs, nrow=num_prototypes).cpu().detach().numpy()
+        # TODO make tf draw the prototypes
 
         # prepare to plot
         relevances = relevances.squeeze(0).cpu().detach().numpy()
@@ -273,7 +272,8 @@ class DiSENN(nn.Module):
         ax3.tick_params(axis='x', which='major', labelsize=12)
         ax3.set_yticks([])
 
-        ax4.imshow(prototype_grid_img.transpose(1, 2, 0))
+        # ax4.imshow(prototype_grid_img.transpose(1, 2, 0))
+        # TODO draw prototypes in appropriate format
         ax4.set_title('Prototypes', fontsize=18)
         ax4.set_axis_off()
 
