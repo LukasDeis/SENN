@@ -3,10 +3,14 @@ import os
 from pprint import pprint
 from types import SimpleNamespace
 
+from tensorflow import keras
+
+"""
 import torch
 import torch.nn.functional as F
 import torch.optim as opt
 from torch.utils.tensorboard import SummaryWriter
+"""
 
 from .models.senn import SENN, DiSENN
 from .models.losses import *
@@ -82,7 +86,7 @@ class SENN_Trainer:
         self.train_loader, self.val_loader, self.test_loader = get_dataloader(config)
 
         if hasattr(config, "manual_seed"):
-            torch.manual_seed(config.manual_seed)
+            tf.random.set_seed(config.manual_seed)
 
         # get appropriate models from global namespace and instantiate them
         try:
@@ -94,7 +98,7 @@ class SENN_Trainer:
             exit(-1)
 
         # Define losses
-        self.classification_loss = F.nll_loss
+        self.classification_loss = tf.nn.log_poisson_loss() #this is missing parameters now in tf
         self.concept_loss = mse_l1_sparsity
         self.robustness_loss = eval(config.robustness_loss)
 
@@ -104,7 +108,7 @@ class SENN_Trainer:
         self.summarize()
 
         # Init optimizer
-        self.opt = opt.Adam(self.model.parameters(), lr=config.lr)
+        self.opt = keras.optimizers.Adam(learning_rate=config.lr) #  missing: self.model.parameters() now
 
         # Init trackers
         self.current_iter = 0
@@ -120,10 +124,12 @@ class SENN_Trainer:
         os.makedirs(self.checkpoint_dir, exist_ok=True)
         os.makedirs(self.log_dir, exist_ok=True)
 
-        self.writer = SummaryWriter(log_dir=self.log_dir)
+        # no longer necessary, replace with tape?
+        # self.writer = SummaryWriter(log_dir=self.log_dir)
 
         if hasattr(config, "load_checkpoint"):
-            self.load_checkpoint(config.load_checkpoint)
+            raise NotImplementedError
+            # self.load_checkpoint(config.load_checkpoint) #TODO this should be fixed with keras model
 
     def run(self):
         """Run the training loop.
@@ -242,6 +248,7 @@ class SENN_Trainer:
                 classification_loss = self.classification_loss(y_pred.squeeze(-1), labels)
                 # robustness_loss = self.robustness_loss(x, y_pred, concepts, relevances)
                 robustness_loss = torch.tensor(0.0)  # jacobian cannot be computed with no_grad enabled
+                #  replace somehow
                 concept_loss = self.concept_loss(x, x_reconstructed, concepts, self.config.sparsity_reg)
 
                 total_loss = classification_loss + \
@@ -321,9 +328,12 @@ class SENN_Trainer:
         file_name: str
             Name of the checkpoint file.
         """
+        #TODO replace this with keras model solution
+        """
         try:
             file_name = path.join(self.checkpoint_dir, file_name)
             print(f"Loading checkpoint...")
+            
             checkpoint = torch.load(file_name, self.config.device)
 
             self.current_epoch = checkpoint['epoch']
@@ -337,8 +347,11 @@ class SENN_Trainer:
         except OSError:
             print(f"No checkpoint exists @ {self.checkpoint_dir}")
             print("**Training for the first time**")
+        """
+        raise NotImplementedError
 
     def save_checkpoint(self, file_name=None):
+        # TODO replace this with keras model solution
         """Save checkpoint in the checkpoint directory.
 
         Checkpoint dir and checkpoint_file need to be specified in the configs.
@@ -347,6 +360,7 @@ class SENN_Trainer:
         ----------
         file_name: str
             Name of the checkpoint file.
+        """
         """
         if file_name is None:
             file_name = f"Epoch[{self.current_epoch}]-Step[{self.current_iter}].pt"
@@ -362,10 +376,12 @@ class SENN_Trainer:
         torch.save(state, file_name)
 
         print(f"Checkpoint saved @ {file_name}\n")
+        """
+        raise NotImplementedError
 
     def print_n_save_metrics(self, filename, total_loss, classification_loss, robustness_loss, concept_loss, accuracy):
         """Prints the losses to the console and saves them in a csv file
-
+        #TODO replace this with keras model solution
         Parameters
         ----------
         filename: str
@@ -380,6 +396,7 @@ class SENN_Trainer:
             The value of the concept loss
         accuracy: float
             The value of the accuracy
+        """
         """
         report = (f"Total Loss:{total_loss:.3f} \t"
                   f"Classification Loss:{classification_loss:.3f} \t"
@@ -399,14 +416,18 @@ class SENN_Trainer:
             csv_writer.writerow({'Accuracy': accuracy, 'Classification_Loss': classification_loss,
                                  'Robustness_Loss': robustness_loss, 'Concept_Loss': concept_loss,
                                  'Loss': total_loss, 'Step': self.current_iter})
+        """
+        raise NotImplementedError
 
     def visualize(self, save_dir):
+        # TODO replace this with keras model solution
         """Generates plots to visualize the explanations.
 
         Parameters
         ----------
         save_dir : str
             Directory where the figures are saved
+        """
         """
         self.model.eval()
 
@@ -424,6 +445,8 @@ class SENN_Trainer:
         if hasattr(self.config, 'accuracy_vs_lambda'):
             save_path = path.join(save_dir, 'accuracy_vs_lambda.png')
             plot_lambda_accuracy(self.config.accuracy_vs_lambda, save_path, **self.config.__dict__)
+        """
+        raise NotImplementedError
 
     def finalize(self):
         """Finalize all necessary operations before exiting training.
@@ -431,15 +454,18 @@ class SENN_Trainer:
         Saves checkpoint.
         """
         print("Please wait while we finalize...")
-        self.save_checkpoint()
+        self.save_checkpoint()  # TODO convert to keras solution for this
 
     def summarize(self):
+        # TODO replace this with keras model solution
         """Print summary of given model.
+        """
         """
         print(self.model)
         train_params = sum(p.numel() for p in self.model.parameters())
         print(f"Trainable Parameters: {train_params}\n")
-
+        """
+        raise NotImplementedError
 
 class DiSENN_Trainer(SENN_Trainer):
     """Extends general Trainer to train a DiSENN model"""
@@ -465,7 +491,8 @@ class DiSENN_Trainer(SENN_Trainer):
             exit(-1)
 
         # Define DiSENN losses
-        self.classification_loss = F.nll_loss
+        self.classification_loss = tf.math.log(tf.keras.losses.SparseCategoricalCrossentropy)
+                # TODO possibly this needs to be clipped
         self.concept_loss = BVAE_loss
         self.robustness_loss = eval(config.robustness_loss)
 
@@ -475,7 +502,7 @@ class DiSENN_Trainer(SENN_Trainer):
         self.summarize()
 
         # Init optimizer
-        self.opt = opt.Adam(self.model.parameters())
+        self.opt = keras.optimizers.Adam()  # missing: self.model.parameters()
 
         # Pretrain Conceptizer if required
         if self.config.pretrain_epochs > 0:
@@ -483,17 +510,7 @@ class DiSENN_Trainer(SENN_Trainer):
             self.model.vae_conceptizer = self.pretrain(self.model.vae_conceptizer, self.config.pre_beta)
 
     def pretrain(self, conceptizer, beta=0.):
-        """Pre-trains conceptizer on the training data to optimize the concept loss
-        
-        Parameters:
-        ----------
-        conceptizer : VaeConceptizer
-            object of class VaeConceptizer to be pre-trained
-        beta : float
-            beta value during the pre-training of the beta-VAE
-        """
-
-        optimizer = opt.Adam(conceptizer.parameters())
+        optimizer = tf.keras.optimizers.Adam()  # missing: self.model.parameters()
         conceptizer.to(self.config.device)
         conceptizer.train()
 
@@ -677,19 +694,19 @@ class DiSENN_Trainer(SENN_Trainer):
         ----------
         filename: str
             Name of the csv file.
-       
+
         total_loss: float
             The value of the total loss
-       
+
         classification_loss: float
             The value of the classification loss
-       
+
         robustness_loss: float
             The value of the robustness loss
-       
+
         concept_loss: float
             The value of the concept loss
-       
+
         recon_loss: float
             Reconstruction loss of the VAE Conceptizer
 
@@ -720,3 +737,13 @@ class DiSENN_Trainer(SENN_Trainer):
             csv_writer.writerow({'Accuracy': accuracy, 'Classification_Loss': classification_loss,
                                  'Robustness_Loss': robustness_loss, 'Concept_Loss': concept_loss,
                                  'Loss': total_loss, 'Step': self.current_iter})
+        """Pre-trains conceptizer on the training data to optimize the concept loss
+        
+        Parameters:
+        ----------
+        conceptizer : VaeConceptizer
+            object of class VaeConceptizer to be pre-trained
+        beta : float
+            beta value during the pre-training of the beta-VAE
+        """
+
