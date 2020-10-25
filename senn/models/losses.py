@@ -32,6 +32,8 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     num_classes = aggregates.size(1)
 
     grad_tensor = tf.ones([batch_size, num_classes])  # in torch explicitly converted: .to(x.device)
+
+    #  grad still needs to be replaced when this is converted to a keras class
     J_yx = grad(outputs=aggregates, inputs=x, \
                                grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
     #  as 'only_inputs' is True, the function will only return a list of gradients w.r.t the specified inputs.
@@ -42,7 +44,8 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     # J_hx = Identity Matrix; h(x) is identity function
     robustness_loss = J_yx - relevances
 
-    return robustness_loss.norm(p='fro') #replace as this might not work with tf tensor
+    normed = tf.norm(robustness_loss, ord='fro')
+    return normed
 
 
 def BVAE_loss(x, x_hat, z_mean, z_logvar):
