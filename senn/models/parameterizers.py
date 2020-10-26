@@ -29,8 +29,8 @@ class LinearParameterizer(tf.nn):
         for h, h_next in zip(hidden_sizes, hidden_sizes[1:]):
             self.model.add(keras.layers.Dense(h, h_next, activation='linear'))
             self.model.add(keras.layers.Dropout(self.dropout))
-            self.model.add(nn.ReLU())
-        layers.pop() # TODO remove last layer from model
+            self.model.add(keras.layers.Dense(h, h_next, activation='relu'))
+        self.model.pop()
 
     def forward(self, x):
         """Forward pass of compas parameterizer.
