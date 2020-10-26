@@ -1,8 +1,8 @@
-import torch
-import torch.nn as nn
+import tensorflow as tf
+from tensorflow import keras
 
 
-class LinearParameterizer(nn.Module):
+class LinearParameterizer(tf.nn):
     def __init__(self, num_concepts, num_classes, hidden_sizes=(10, 5, 5, 10), dropout=0.5, **kwargs):
         """Parameterizer for compas dataset.
         
@@ -25,13 +25,12 @@ class LinearParameterizer(nn.Module):
         self.num_classes = num_classes
         self.hidden_sizes = hidden_sizes
         self.dropout = dropout
-        layers = []
+        self.model = keras.Sequential()
         for h, h_next in zip(hidden_sizes, hidden_sizes[1:]):
-            layers.append(nn.Linear(h, h_next))
-            layers.append(nn.Dropout(self.dropout))
-            layers.append(nn.ReLU())
-        layers.pop()
-        self.layers = nn.Sequential(*layers)
+            self.model.add(keras.layers.Dense(h, h_next, activation='linear'))
+            self.model.add(keras.layers.Dropout(self.dropout))
+            self.model.add(nn.ReLU())
+        layers.pop() # TODO remove last layer from model
 
     def forward(self, x):
         """Forward pass of compas parameterizer.
@@ -49,7 +48,7 @@ class LinearParameterizer(nn.Module):
         parameters : torch.Tensor
             Relevance scores associated with concepts. Of shape (BATCH, NUM_CONCEPTS, NUM_CLASSES)
         """
-        return self.layers(x).view(x.size(0), self.num_concepts, self.num_classes)
+        return self.model(x).view(x.size(0), self.num_concepts, self.num_classes)
 
 
 class ConvParameterizer(nn.Module):
