@@ -1,10 +1,10 @@
 from abc import abstractmethod
-
+import tensorflow as tf
 import torch
 import torch.nn as nn
 
 
-class Conceptizer(nn.Module):
+class Conceptizer(tf.module):
     def __init__(self):
         """
         A general Conceptizer meta-class. Children of the Conceptizer class
