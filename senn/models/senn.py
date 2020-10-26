@@ -229,7 +229,7 @@ class DiSENN(tf.Module):
         concepts_traversals = [self.traverse(concepts_sample, dim, traversal_range,
                                              num_prototypes, mean[:, dim], std[:, dim], use_cdf)
                                for dim in range(num_concepts)]
-        concepts_traversals = torch.cat(concepts_traversals, dim=0)
+        concepts_traversals = tf.concat(concepts_traversals, dim=0)
         prototypes = self.vae_conceptizer.decoder(concepts_traversals)
         prototype_imgs = prototypes.view(-1, x.shape[0], x.shape[1], x.shape[2])
 
@@ -312,11 +312,11 @@ class DiSENN(tf.Module):
                 "If CDF is to be used, mean and std has to be defined"
             prob_traversal = (1 - 2 * traversal_range) / 2  # from 0.45 to 0.05
             prob_traversal = stats.norm.ppf(prob_traversal, loc=mean, scale=std)[0]  # from 0.05 to -1.645
-            traversal = torch.linspace(-1 * prob_traversal, prob_traversal, steps)
+            traversal = tf.linspace(-1 * prob_traversal, prob_traversal, steps)
             matrix_traversal = matrix.clone()  # to avoid changing the matrix
             matrix_traversal[:, dim] = traversal
         else:
-            traversal = torch.linspace(-1 * traversal_range, traversal_range, steps)
+            traversal = tf.linspace(-1 * traversal_range, traversal_range, steps)
             matrix_traversal = matrix.clone()  # to avoid changing the matrix
             matrix_traversal[:, dim] = traversal
         return matrix_traversal
