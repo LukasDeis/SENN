@@ -1,7 +1,8 @@
 from abc import abstractmethod
 import tensorflow as tf
+import keras
+from keras.layers import Dense, Flatten
 import torch
-import torch.nn as nn
 
 
 class Conceptizer(tf.module):
@@ -196,15 +197,18 @@ class VaeEncoder(nn.Module):
         super().__init__()
         self.in_dim = in_dim
         self.z_dim = z_dim
-        self.FC = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(in_dim, 512),
-            nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 100),
-            nn.ReLU()
+        self.FC = keras.Sequential(
+            [
+                Flatten(),                   # TODO fix those shapes:
+                Dense(activation='linear'),  # (in_dim, 512)
+                Dense(activation='relu'),
+                Dense(activation='linear'),  # (512, 256)
+                Dense(activation='relu'),
+                Dense(activation='linear'),  # (256, 100)
+                Dense(activation='relu')
+            ]
         )
+
         self.mean_layer = nn.Linear(100, z_dim)
         self.logvar_layer = nn.Linear(100, z_dim)
 
@@ -247,7 +251,6 @@ class VaeDecoder(nn.Module):
         """Forward pass of a decoder"""
         x_reconstruct = torch.sigmoid(self.FC(x))
         return x_reconstruct
-
 
 
 class Flatten(nn.Module):
