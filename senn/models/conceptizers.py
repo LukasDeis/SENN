@@ -106,7 +106,7 @@ class IdentityConceptizer(Conceptizer):
         return z.squeeze(-1)
 
 
-class VaeConceptizer(nn.Module):
+class VaeConceptizer(tf.nn):
     """Variational Auto Encoder to generate basis concepts
 
     Concepts should be independently sensitive to single generative factors,
@@ -181,7 +181,7 @@ class VaeConceptizer(nn.Module):
         return z
 
 
-class VaeEncoder(nn.Module):
+class VaeEncoder(tf.nn):
     """Encoder of a VAE"""
 
     def __init__(self, in_dim, z_dim):
@@ -208,9 +208,9 @@ class VaeEncoder(nn.Module):
                 Dense(activation='relu')
             ]
         )
-
-        self.mean_layer = nn.Linear(100, z_dim)
-        self.logvar_layer = nn.Linear(100, z_dim)
+                                                        # TODO fix those shapes:
+        self.mean_layer = Dense(activation='linear'),   # (100, z_dim)
+        self.logvar_layer = Dense(activation='linear'), # (100, z_dim)
 
     def forward(self, x):
         """Forward pass of the encoder
@@ -221,7 +221,7 @@ class VaeEncoder(nn.Module):
         return mean, logvar
 
 
-class VaeDecoder(nn.Module):
+class VaeDecoder(tf.nn):
     """Decoder of a VAE"""
 
     def __init__(self, in_dim, z_dim):
@@ -253,7 +253,7 @@ class VaeDecoder(nn.Module):
         return x_reconstruct
 
 
-class Flatten(nn.Module):
+class Flatten(tf.nn):
     def forward(self, x):
         """
         Flattens the inputs to only 3 dimensions, preserving the sizes of the 1st and 2nd.
@@ -301,7 +301,7 @@ def handle_integer_input(input, desired_len):
         raise TypeError(f"Wrong type of the parameters. Expected tuple or int but got '{type(input)}'")
 
 
-class ScalarMapping(nn.Module):
+class ScalarMapping(tf.nn):
     def __init__(self, conv_block_size):
         """
         Module that maps each filter of a convolutional block to a scalar value
