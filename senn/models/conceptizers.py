@@ -180,7 +180,7 @@ class VaeConceptizer(tf.nn):
         return z
 
 
-class VaeEncoder(tf.nn):
+class VaeEncoder(tf.nn): #TODO the mean and logvar layer has to be properly integrated
     """Encoder of a VAE"""
 
     def __init__(self, in_dim, z_dim):
