@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import tensorflow as tf
 import keras
-from keras.layers import Dense, Flatten
+from keras.layers import Dense
 import torch
 
 
@@ -199,13 +199,14 @@ class VaeEncoder(tf.nn):
         self.z_dim = z_dim
         self.FC = keras.Sequential(
             [
-                Flatten(),                   # TODO fix those shapes:
-                Dense(activation='linear'),  # (in_dim, 512)
-                Dense(activation='relu'),
-                Dense(activation='linear'),  # (512, 256)
-                Dense(activation='relu'),
-                Dense(activation='linear'),  # (256, 100)
-                Dense(activation='relu')
+                keras.layers.Flatten(),
+                tf.keras.Input(shape=self.in_dim),  # TODO is this layer necessary?
+                Dense(512, activation='linear'),  # (in_dim, 512)
+                Dense(512, activation='relu'),
+                Dense(256, activation='linear'),  # (512, 256)
+                Dense(256, activation='relu'),
+                Dense(100, activation='linear'),  # (256, 100)
+                Dense(100, activation='relu')
             ]
         )
                                                         # TODO fix those shapes:
@@ -237,14 +238,18 @@ class VaeDecoder(tf.nn):
         super().__init__()
         self.in_dim = in_dim
         self.z_dim = z_dim
-        self.FC = nn.Sequential(
-            nn.Linear(z_dim, 100),
-            nn.ReLU(),
-            nn.Linear(100, 256),
-            nn.ReLU(),
-            nn.Linear(256, 512),
-            nn.ReLU(),
-            nn.Linear(512, in_dim)
+        self.FC = keras.Sequential(
+            [
+                keras.layers.Flatten(),
+                tf.keras.Input(shape=z_dim),  # TODO is this layer necessary?
+                Dense(100, activation='linear'),  # (z_dim, 100)
+                Dense(100, activation='relu'),
+                Dense(256, activation='linear'),  # (100, 256)
+                Dense(256, activation='relu'),
+                Dense(512, activation='linear'),  # (256, 512)
+                Dense(512, activation='relu'),
+                Dense(in_dim, activation='linear'),  # (512, in_dim)
+            ]
         )
 
     def forward(self, x):

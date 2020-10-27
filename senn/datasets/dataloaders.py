@@ -65,10 +65,6 @@ class CompasDataset(Dataset): #replace Dataset
         return len(self.X)
 
     def __getitem__(self, idx):  # probably to be removed
-        # Convert idx from tensor to list due to pandas bug (that arises when using pytorch's random_split)
-        if isinstance(idx, torch.Tensor):
-            idx = idx.tolist()
-
         return self.X.iloc[idx].values.astype(float), self.y[idx]
 
 
