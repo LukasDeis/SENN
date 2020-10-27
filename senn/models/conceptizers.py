@@ -2,7 +2,6 @@ from abc import abstractmethod
 import tensorflow as tf
 import keras
 from keras.layers import Dense
-import torch
 
 
 class Conceptizer(tf.module):
@@ -12,7 +11,7 @@ class Conceptizer(tf.module):
         should implement encode() and decode() functions.
         """
         super(Conceptizer, self).__init__()
-        self.encoder = nn.ModuleList()
+        self.encoder = nn.ModuleList()  # TODO replace those two references to torch.nn
         self.decoder = nn.ModuleList()
 
     def forward(self, x):
@@ -173,8 +172,8 @@ class VaeConceptizer(tf.nn):
             sample latent tensor of shape [batch_size x z_dim]
         """
         if self.training:
-            std = torch.exp(0.5 * logvar)
-            epsilon = torch.randn_like(std)
+            std = tf.math.exp(0.5 * logvar)
+            epsilon = tf.random.normal(std.shape())
             z = mean + std * epsilon
         else:
             z = mean
@@ -254,7 +253,7 @@ class VaeDecoder(tf.nn):
 
     def forward(self, x):
         """Forward pass of a decoder"""
-        x_reconstruct = torch.sigmoid(self.FC(x))
+        x_reconstruct = tf.math.sigmoid(self.FC(x))
         return x_reconstruct
 
 
