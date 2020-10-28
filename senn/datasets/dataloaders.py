@@ -3,6 +3,7 @@ import shutil
 import urllib.request
 from pathlib import Path
 
+import tensorflow as tf
 import numpy as np
 import pandas as pd
 
@@ -25,7 +26,6 @@ def get_dataloader(config):
         return load_compas(**config.__dict__)
     else:
         RuntimeError("The specified dataset has not been found")
-
 
 #  --------------- Compas Dataset  ---------------
 
