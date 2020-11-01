@@ -26,10 +26,17 @@ class LinearParameterizer(tf.nn):
         self.hidden_sizes = hidden_sizes
         self.dropout = dropout
         self.model = keras.Sequential()
+        index = 1
         for h, h_next in zip(hidden_sizes, hidden_sizes[1:]):
-            self.model.add(keras.layers.Dense(h, h_next, activation='linear'))
-            self.model.add(keras.layers.Dropout(self.dropout))
-            self.model.add(keras.layers.Dense(h, h_next, activation='relu'))
+            #self.model.add(keras.layers.Dense(h, h_next, activation='linear'))
+            #self.model.add(keras.layers.Dropout(self.dropout))
+            #self.model.add(keras.layers.Dense(h, h_next, activation='relu'))
+
+            self["para_lin"+index] = keras.layers.Dense(h, h_next, activation='linear')
+            self["para_drop"+index] = keras.layers.Dropout(self.dropout)
+            self["para_relu"+index] = keras.layers.Dense(h, h_next, activation='relu')
+            index += 1
+
         self.model.pop()
 
     def forward(self, x):

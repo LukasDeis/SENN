@@ -73,7 +73,7 @@ class SENN(tf.Module):
         return predictions, explanations, recon_x
 
 
-class DiSENN(tf.Module):
+class DiSENN(tf.keras.Model):
     """Self-Explaining Neural Network with Disentanglement 
 
     DiSENN is an extension of the Self-Explaining Neural Network proposed by [1]
