@@ -1,6 +1,4 @@
 import tensorflow as tf
-import autograd.numpy as np
-from autograd import grad
 
 
 
