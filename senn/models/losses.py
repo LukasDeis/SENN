@@ -32,7 +32,7 @@ def compas_robustness_loss(x, aggregates, concepts, relevances):
     grad_tensor = tf.ones([batch_size, num_classes])  # in torch explicitly converted: .to(x.device)
 
     #  grad still needs to be replaced when this is converted to a keras class
-    J_yx = grad(outputs=aggregates, inputs=x, \
+    J_yx = grad(outputs=aggregates, inputs=x,
                                grad_outputs=grad_tensor, create_graph=True, only_inputs=True)[0]
     #  as 'only_inputs' is True, the function will only return a list of gradients w.r.t the specified inputs.
 
